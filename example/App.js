@@ -9,13 +9,13 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Platform, StyleSheet, Text, TextInput, View, Button, NativeModules, Alert, Switch, ScrollView, PermissionsAndroid, NativeEventEmitter } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View, Button, NativeModules, Alert, Switch, ScrollView, PermissionsAndroid, DeviceEventEmitter } from 'react-native';
  import { sha512 } from 'js-sha512';
 const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
  
  export default App= () => {
  
-     const [key, setKey] = useState('gtKFFx');
+     const [key, setKey] = useState('1CtZF0');
      const [amount, setAmount] = useState("10");
      const [productInfo, setProductInfo] = useState('productInfo');
      const [firstName, setFirstName] = useState('firstName');
@@ -32,7 +32,7 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
      const [udf3, setUdf3] = useState('udf3');
      const [udf4, setUdf4] = useState('udf4');
      const [udf5, setUdf5] = useState('udf5');
-     const [merchantSalt, setMerchantSalt] = useState('1b1b0');
+     const [merchantSalt, setMerchantSalt] = useState('y4kex5ESbE5PjJMHBhg5OyrQgsRpeK0p');
  
      const [userCredential, setUserCredential] = useState('umang:arya');
  
@@ -123,13 +123,11 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
  
      //Register eventEmitters here
      useEffect(() => {
-         const eventEmitter = new NativeEventEmitter(PayUBizSdk);
- 
-         payUOnPaymentSuccess = eventEmitter.addListener('onPaymentSuccess', onPaymentSuccess);
-         payUOnPaymentFailure = eventEmitter.addListener('onPaymentFailure', onPaymentFailure);
-         payUOnPaymentCancel = eventEmitter.addListener('onPaymentCancel', onPaymentCancel);
-         payUOnError = eventEmitter.addListener('onError', onError);
-         payUGenerateHash = eventEmitter.addListener('generateHash', generateHash);
+        payUOnPaymentSuccess = DeviceEventEmitter.addListener('onPaymentSuccess', onPaymentSuccess);
+        payUOnPaymentFailure = DeviceEventEmitter.addListener('onPaymentFailure', onPaymentFailure);
+        payUOnPaymentCancel = DeviceEventEmitter.addListener('onPaymentCancel', onPaymentCancel);
+        payUOnError = DeviceEventEmitter.addListener('onError', onError);
+        payUGenerateHash = DeviceEventEmitter.addListener('generateHash', generateHash);
     //Unregister eventEmitters here
          return () => {
             console.log("Unsubscribed!!!!")
@@ -147,10 +145,12 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
             return;
         }
 
-        const activityLifecycleEmitter = new NativeEventEmitter(MainActivityLifecycleEmitter);
-        mainActivityLifecycleListener = activityLifecycleEmitter.addListener('MainActivityLifecycle', onMainActivityLifecycle);
+        mainActivityLifecycleListener = DeviceEventEmitter.addListener('MainActivityLifecycle', onMainActivityLifecycle);
+        MainActivityLifecycleEmitter.setJsListenerReady(true);
+        MainActivityLifecycleEmitter.flushPendingEvents();
 
         return () => {
+            MainActivityLifecycleEmitter.setJsListenerReady(false);
             mainActivityLifecycleListener.remove();
         };
     }, []);
@@ -181,12 +181,8 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
      }
 
     onMainActivityLifecycle = (e) => {
-        if (!isPayUMethodCalled.current) {
-            return;
-        }
-
         const methodName = e && e.methodName ? e.methodName : 'unknown';
-        console.log('MainActivity lifecycle method:', methodName, e);
+        console.log('MainActivity lifecycle method:', methodName, e, 'isPayUMethodCalled:', isPayUMethodCalled.current);
     }
 
      createPaymentParams = () => {

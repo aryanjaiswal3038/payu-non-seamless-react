@@ -16,6 +16,7 @@ public class MainActivity extends ReactActivity {
     @Override
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        System.out.println("onCreateReactcalled");
         MainActivityLifecycleModule.emitLifecycleEvent("onCreate");
     }
 

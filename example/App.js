@@ -8,10 +8,10 @@
  * https://github.com/facebook/react-native
  */
 
- import React, { useState, useEffect } from 'react';
- import { Platform, StyleSheet, Text, TextInput, View, Button, NativeModules, Alert, Switch, ScrollView, PermissionsAndroid, DeviceEventEmitter, NativeEventEmitter } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Platform, StyleSheet, Text, TextInput, View, Button, NativeModules, Alert, Switch, ScrollView, PermissionsAndroid, NativeEventEmitter } from 'react-native';
  import { sha512 } from 'js-sha512';
- const { PayUBizSdk } = NativeModules;
+const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
  
  export default App= () => {
  
@@ -55,6 +55,7 @@
      const [autoApprove, setAutoApprove] = useState(false);
      const [merchantSMSPermission, setMerchantSMSPermission] = useState(false);
      const [showAlert, setShowAlert] = useState(false);
+    const isPayUMethodCalled = useRef(false);
  
      displayAlert = (title, value) => {
          if (showAlert == false) {
@@ -140,6 +141,19 @@
        }
 
      }, [merchantSalt])
+
+    useEffect(() => {
+        if (Platform.OS !== 'android' || !MainActivityLifecycleEmitter) {
+            return;
+        }
+
+        const activityLifecycleEmitter = new NativeEventEmitter(MainActivityLifecycleEmitter);
+        mainActivityLifecycleListener = activityLifecycleEmitter.addListener('MainActivityLifecycle', onMainActivityLifecycle);
+
+        return () => {
+            mainActivityLifecycleListener.remove();
+        };
+    }, []);
  
      onPaymentSuccess = (e) => {
          console.log(e.merchantResponse);
@@ -165,6 +179,16 @@
          console.log(e.hashString);
          sendBackHash(e.hashName, e.hashString + merchantSalt);
      }
+
+    onMainActivityLifecycle = (e) => {
+        if (!isPayUMethodCalled.current) {
+            return;
+        }
+
+        const methodName = e && e.methodName ? e.methodName : 'unknown';
+        console.log('MainActivity lifecycle method:', methodName, e);
+    }
+
      createPaymentParams = () => {
          var txnid = new Date().getTime().toString();
          console.log('AutoSelectOtp: '+autoSelectOtp +'MerchantSmsPermission: '+merchantSMSPermission);
@@ -248,6 +272,7 @@
      }
      launchPayU = () => {
          console.log('Method launched amount =' + amount);
+        isPayUMethodCalled.current = true;
          PayUBizSdk.openCheckoutScreen(createPaymentParams());
      }
      return (

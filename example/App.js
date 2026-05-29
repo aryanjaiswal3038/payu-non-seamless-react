@@ -15,7 +15,7 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
  
  export default App= () => {
  
-     const [key, setKey] = useState('1CtZF0');
+     const [key, setKey] = useState('gtKFFx');
      const [amount, setAmount] = useState("10");
      const [productInfo, setProductInfo] = useState('productInfo');
      const [firstName, setFirstName] = useState('firstName');
@@ -32,7 +32,7 @@ const { PayUBizSdk, MainActivityLifecycleEmitter } = NativeModules;
      const [udf3, setUdf3] = useState('udf3');
      const [udf4, setUdf4] = useState('udf4');
      const [udf5, setUdf5] = useState('udf5');
-     const [merchantSalt, setMerchantSalt] = useState('y4kex5ESbE5PjJMHBhg5OyrQgsRpeK0p');
+     const [merchantSalt, setMerchantSalt] = useState('4R38IvwiV57FwVpsgOvTXBdLE4tHUXFW');
  
      const [userCredential, setUserCredential] = useState('umang:arya');
  
